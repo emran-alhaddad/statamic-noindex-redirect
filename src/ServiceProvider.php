@@ -24,44 +24,10 @@ class ServiceProvider extends AddonServiceProvider
         'web' => __DIR__ . '/../routes/web.php',
     ];
 
-    private function utilityIcon(): string
+    private function svgIcon(string $name): string
     {
-        $iconName = 'noindex-redirect';
-        $iconPath = $this->getAddon()->directory().'resources/svg/icons/noindex-redirect.svg';
-
-        if (is_file($iconPath) && class_exists(\Statamic\Facades\CP\SVG::class) && is_callable([\Statamic\Facades\CP\SVG::class, 'extend'])) {
-            try {
-                \Statamic\Facades\CP\SVG::extend(function ($svg) use ($iconName, $iconPath) {
-                    if (! is_object($svg)) {
-                        return;
-                    }
-
-                    if (method_exists($svg, 'add')) {
-                        $svg->add($iconName, $iconPath);
-                        return;
-                    }
-
-                    if (method_exists($svg, 'register')) {
-                        $svg->register($iconName, $iconPath);
-                    }
-                });
-
-                return $iconName;
-            } catch (\Throwable $e) {
-                // Fallbacks below.
-            }
-        }
-
-        if (is_file($iconPath) && class_exists(\Statamic\Facades\CP\Icon::class) && is_callable([\Statamic\Facades\CP\Icon::class, 'register'])) {
-            try {
-                \Statamic\Facades\CP\Icon::register($iconName, $iconPath);
-                return $iconName;
-            } catch (\Throwable $e) {
-                // Fallbacks below.
-            }
-        }
-
-        return 'eye';
+        $path = __DIR__ . '/../resources/svg/' . $name . '.svg';
+        return file_exists($path) ? (file_get_contents($path) ?: '') : '';
     }
 
     /**
@@ -81,23 +47,23 @@ class ServiceProvider extends AddonServiceProvider
             $this->registerSettingsBlueprint(YAML::file($path)->parse());
         }
 
-        $utilityIcon = $this->utilityIcon();
-
-        Utility::register('noindex_redirect')
-            ->icon($utilityIcon)
-            ->title(__('Noindex Redirect'))
-            ->description(__('Disable indexing and configure root redirect.'))
-            ->view('noindex-redirect::utility', function ($request) {
-                return [
-                    'settings' => NoindexRedirectSettings::all(),
-                    'has_stored_settings' => NoindexRedirectSettings::hasStoredSettings(),
-                    'storage_relative_path' => NoindexRedirectSettings::storageRelativePath(),
-                ];
-            })
-            ->routes(function ($router) {
-                $router->post('/', [NoindexRedirectUtilityController::class, 'update'])->name('update');
-                $router->post('reset', [NoindexRedirectUtilityController::class, 'reset'])->name('reset');
-            });
+        Utility::extend(function () {
+            Utility::register('noindex_redirect')
+                ->icon($this->svgIcon('noindex-redirect'))
+                ->title(__('Noindex Redirect'))
+                ->description(__('Disable indexing and configure root redirect.'))
+                ->view('noindex-redirect::utility', function ($request) {
+                    return [
+                        'settings' => NoindexRedirectSettings::all(),
+                        'has_stored_settings' => NoindexRedirectSettings::hasStoredSettings(),
+                        'storage_relative_path' => NoindexRedirectSettings::storageRelativePath(),
+                    ];
+                })
+                ->routes(function ($router) {
+                    $router->post('/', [NoindexRedirectUtilityController::class, 'update'])->name('update');
+                    $router->post('reset', [NoindexRedirectUtilityController::class, 'reset'])->name('reset');
+                });
+        });
 
         // Register our middleware early so it wraps other middleware (eg. static caching)
         // and can still apply headers/meta tags even when a cache returns early.

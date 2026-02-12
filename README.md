@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" width="160" alt="Noindex Redirect" />
+  <img src="assets/thumbnail.png" width="160" alt="Noindex Redirect" />
 </p>
 
 <p align="center">
