@@ -1,0 +1,29 @@
+tabs:
+  main:
+    display: Settings
+    sections:
+      -
+        fields:
+          -
+            handle: disable_indexing
+            field:
+              type: toggle
+              display: Disable Indexing
+              instructions: Add X-Robots-Tag: noindex, nofollow to all front-end responses.
+              default: true
+          -
+            handle: enable_redirect
+            field:
+              type: toggle
+              display: Enable Redirect
+              instructions: Redirect the root path of the CMS subdomain to a specified URL.
+              default: false
+          -
+            handle: redirect_url
+            field:
+              type: text
+              display: Redirect URL
+              instructions: Absolute URL to redirect to (e.g., https://example.com).
+              validate: sometimes|url
+              if:
+                enable_redirect: '=== true'

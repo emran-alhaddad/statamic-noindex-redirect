@@ -1,0 +1,48 @@
+{
+    "name": "emran-alhaddad/noindex-redirect",
+    "description": "Disable indexing (noindex/nofollow) and optionally redirect the site root, with a Statamic CP Utility.",
+    "type": "statamic-addon",
+    "license": "MIT",
+    "keywords": [
+        "statamic",
+        "laravel",
+        "seo",
+        "robots",
+        "noindex",
+        "nofollow",
+        "redirect"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Emran\\NoindexRedirect\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^8.2",
+        "statamic/cms": "^5.0|^6.0"
+    },
+    "extra": {
+        "statamic": {
+            "name": "Noindex Redirect",
+            "description": "Disable indexing (noindex/nofollow) and optionally redirect the site root."
+        },
+        "laravel": {
+            "providers": [
+                "Emran\\NoindexRedirect\\ServiceProvider"
+            ]
+        }
+    },
+    "authors": [
+        {
+            "name": "Emran Alhaddad",
+            "email": "emran.alhaddad.dev@gmail.com",
+            "homepage": "https://github.com/emran-alhaddad"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/emran-alhaddad/noindex-redirect/issues",
+        "source": "https://github.com/emran-alhaddad/noindex-redirect"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
