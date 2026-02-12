@@ -42,7 +42,7 @@ class ServiceProvider extends AddonServiceProvider
         }
 
         Utility::register('noindex_redirect')
-            ->icon('eye')
+            ->icon('noindex-redirect')
             ->title(__('Noindex Redirect'))
             ->description(__('Disable indexing and configure root redirect.'))
             ->view('noindex-redirect::utility', function ($request) {

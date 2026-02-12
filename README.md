@@ -1,3 +1,25 @@
+<p align="center">
+  <img src="assets/logo.svg" width="160" alt="Noindex Redirect" />
+</p>
+
+<p align="center">
+  <a href="https://statamic.com/addons/emran-alhaddad/statamic-noindex-redirect">
+    <img alt="Statamic Marketplace" src="https://img.shields.io/badge/Statamic-Marketplace-4E5DFF?logo=statamic&logoColor=white" />
+  </a>
+  <a href="https://packagist.org/packages/emran-alhaddad/noindex-redirect">
+    <img alt="Latest Version on Packagist" src="https://img.shields.io/packagist/v/emran-alhaddad/noindex-redirect" />
+  </a>
+  <a href="https://packagist.org/packages/emran-alhaddad/noindex-redirect">
+    <img alt="Total Downloads" src="https://img.shields.io/packagist/dt/emran-alhaddad/noindex-redirect" />
+  </a>
+  <a href="https://packagist.org/packages/emran-alhaddad/noindex-redirect">
+    <img alt="Monthly Downloads" src="https://img.shields.io/packagist/dm/emran-alhaddad/noindex-redirect" />
+  </a>
+  <a href="https://packagist.org/packages/emran-alhaddad/noindex-redirect">
+    <img alt="License" src="https://img.shields.io/packagist/l/emran-alhaddad/noindex-redirect" />
+  </a>
+</p>
+
 # Noindex Redirect (Statamic Addon)
 
 Disable indexing (`noindex, nofollow`) for your Statamic site and optionally redirect the root URL (`/`) to another domain — managed from a **Control Panel Utility**.
@@ -69,4 +91,3 @@ When **Enable Redirect** is enabled and a `redirect_url` is set, requests to `/`
 ## License
 
 MIT. See `LICENSE`.
-
