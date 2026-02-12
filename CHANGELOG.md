@@ -10,3 +10,8 @@ All notable changes to this project will be documented in this file.
 
 - Add addon logo + README badges.
 - Use a custom Statamic Utility icon.
+
+## 1.0.2 - 2026-02-12
+
+- Fix CP Utility icon registration/loading.
+- Update the README logo to match the provided artwork.
