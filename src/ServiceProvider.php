@@ -17,6 +17,24 @@ use Emran\NoindexRedirect\Http\Controllers\NoindexRedirectUtilityController;
  */
 class ServiceProvider extends AddonServiceProvider
 {
+    public function register()
+    {
+        parent::register();
+
+        $middleware = \Emran\NoindexRedirect\Http\Middleware\NoIndexMiddleware::class;
+
+        $this->app->afterResolving(Kernel::class, function ($kernel) use ($middleware) {
+            if (method_exists($kernel, 'prependMiddleware')) {
+                $kernel->prependMiddleware($middleware);
+                return;
+            }
+
+            if (method_exists($kernel, 'pushMiddleware')) {
+                $kernel->pushMiddleware($middleware);
+            }
+        });
+    }
+
     /**
      * The addon's route definitions. Only the web routes are needed here.
      * @var array
@@ -65,23 +83,5 @@ class ServiceProvider extends AddonServiceProvider
                     $router->post('reset', [NoindexRedirectUtilityController::class, 'reset'])->name('reset');
                 });
         });
-
-        // Register our middleware globally so it also runs when Statamic frontend
-        // routes are disabled (no matched routes => no route middleware groups).
-        $middleware = \Emran\NoindexRedirect\Http\Middleware\NoIndexMiddleware::class;
-
-        try {
-            $kernel = $this->app->make(Kernel::class);
-            if (method_exists($kernel, 'prependMiddleware')) {
-                $kernel->prependMiddleware($middleware);
-            } else {
-                $kernel->pushMiddleware($middleware);
-            }
-        } catch (\Throwable $e) {
-            // If the HTTP kernel isn't available for some reason, fall back to route groups.
-            $router = $this->app['router'];
-            $router->prependMiddlewareToGroup('statamic.web', $middleware);
-            $router->prependMiddlewareToGroup('web', $middleware);
-        }
     }
 }

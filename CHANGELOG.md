@@ -24,3 +24,7 @@ All notable changes to this project will be documented in this file.
 ## 1.0.4 - 2026-02-15
 
 - Register the middleware globally so redirect/noindex still works when Statamic frontend routes are disabled.
+
+## 1.0.5 - 2026-02-15
+
+- Apply noindex headers/meta even for error responses (404/403/500) when frontend routes are disabled.

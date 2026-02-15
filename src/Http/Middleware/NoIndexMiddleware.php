@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Emran\NoindexRedirect\NoindexRedirectSettings;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -48,8 +49,21 @@ class NoIndexMiddleware
             }
         }
 
-        // Let the request continue and capture the response.
-        $response = $next($request);
+        // Let the request continue and capture the response. If a request ends up
+        // as an exception (404/403/500), still render it so we can attach noindex
+        // headers/meta to the final response.
+        try {
+            $response = $next($request);
+        } catch (\Throwable $e) {
+            $handler = app(ExceptionHandler::class);
+
+            try {
+                $handler->report($e);
+            } catch (\Throwable $ignored) {
+            }
+
+            $response = $handler->render($request, $e);
+        }
 
         // Check if indexing is disabled. Use config default if no setting exists.
         $disableIndexing = $settings['disable_indexing'];
