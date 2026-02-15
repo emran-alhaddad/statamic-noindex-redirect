@@ -71,6 +71,7 @@ When enabled, the addon:
 - Adds `X-Robots-Tag: noindex, nofollow` to frontend responses (excludes CP + GraphQL routes).
 - Injects `<meta name="robots" content="noindex, nofollow">` into the HTML `<head>` for `text/html` responses.
 - Optionally manages `public/robots.txt` (see below).
+- Still works even if Statamic frontend routes are disabled in `config/statamic/routes.php`.
 
 ### robots.txt behavior
 

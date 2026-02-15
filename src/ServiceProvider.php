@@ -2,6 +2,7 @@
 
 namespace Emran\NoindexRedirect;
 
+use Illuminate\Contracts\Http\Kernel;
 use Statamic\Providers\AddonServiceProvider;
 use Statamic\Facades\Utility;
 use Statamic\Facades\YAML;
@@ -65,15 +66,22 @@ class ServiceProvider extends AddonServiceProvider
                 });
         });
 
-        // Register our middleware early so it wraps other middleware (eg. static caching)
-        // and can still apply headers/meta tags even when a cache returns early.
+        // Register our middleware globally so it also runs when Statamic frontend
+        // routes are disabled (no matched routes => no route middleware groups).
         $middleware = \Emran\NoindexRedirect\Http\Middleware\NoIndexMiddleware::class;
-        $router = $this->app['router'];
 
-        // Statamic's frontend uses the `statamic.web` group.
-        $router->prependMiddlewareToGroup('statamic.web', $middleware);
-
-        // Keep this on the default `web` group as well for any non-Statamic routes.
-        $router->prependMiddlewareToGroup('web', $middleware);
+        try {
+            $kernel = $this->app->make(Kernel::class);
+            if (method_exists($kernel, 'prependMiddleware')) {
+                $kernel->prependMiddleware($middleware);
+            } else {
+                $kernel->pushMiddleware($middleware);
+            }
+        } catch (\Throwable $e) {
+            // If the HTTP kernel isn't available for some reason, fall back to route groups.
+            $router = $this->app['router'];
+            $router->prependMiddlewareToGroup('statamic.web', $middleware);
+            $router->prependMiddlewareToGroup('web', $middleware);
+        }
     }
 }

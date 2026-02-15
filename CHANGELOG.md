@@ -20,3 +20,7 @@ All notable changes to this project will be documented in this file.
 
 - Replace the logo with a noindex + redirect design (SVG + 600×600 PNG thumbnail).
 - Use the same logo SVG for the CP Utility icon.
+
+## 1.0.4 - 2026-02-15
+
+- Register the middleware globally so redirect/noindex still works when Statamic frontend routes are disabled.
