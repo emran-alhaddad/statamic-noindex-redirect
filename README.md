@@ -89,6 +89,8 @@ If the `public` directory is not writable, robots.txt syncing is skipped.
 
 When **Enable Redirect** is enabled and a `redirect_url` is set, requests to `/` will be redirected (301) to the configured URL.
 
+If Statamic frontend routes are disabled in `config/statamic/routes.php`, the addon will redirect **all frontend GET/HEAD requests** (path + query preserved) to avoid rendering 404 pages (CP, `!/` actions, and GraphQL are excluded).
+
 ## License
 
 MIT. See `LICENSE`.

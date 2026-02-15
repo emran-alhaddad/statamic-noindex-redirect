@@ -24,6 +24,40 @@ class NoIndexMiddleware
 {
     private const ROBOTS_META_TAG = '<meta name="robots" content="noindex, nofollow">';
 
+    private function shouldSkip(Request $request): bool
+    {
+        $firstSegment = $request->segment(1);
+        $cpRoute = Config::get('statamic.cp.route', 'cp');
+
+        if ($firstSegment === $cpRoute) {
+            return true;
+        }
+
+        if (in_array($firstSegment, ['graphql', 'graphql-playground'], true)) {
+            return true;
+        }
+
+        // Statamic "actions" endpoints live under "/!/*" (eg. "/!/forms/*").
+        if ($firstSegment === '!') {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function redirectTarget(string $baseUrl, Request $request): string
+    {
+        $base = rtrim($baseUrl, '/');
+        $uri = $request->getRequestUri(); // includes path + query string
+
+        // Ensure the URI always starts with a slash.
+        if ($uri === '' || $uri[0] !== '/') {
+            $uri = '/'.$uri;
+        }
+
+        return $base.$uri;
+    }
+
     /**
      * Handle an incoming request.
      *
@@ -38,14 +72,21 @@ class NoIndexMiddleware
         $enableRedirect = $settings['enable_redirect'];
         $redirectUrl = $settings['redirect_url'];
 
-        // Perform redirect if enabled and request is for the root of the CMS
-        // subdomain. We avoid redirecting CP or API routes. An empty segment
-        // indicates the root (no segments).
-        if ($enableRedirect && $redirectUrl) {
-            $firstSegment = $request->segment(1);
+        // Perform redirect if enabled for frontend requests only.
+        // If Statamic frontend routes are disabled, redirect ALL frontend
+        // requests to avoid rendering 404 pages.
+        if ($enableRedirect && $redirectUrl && ! $this->shouldSkip($request)) {
+            if (in_array($request->getMethod(), ['GET', 'HEAD'], true)) {
+                $frontendEnabled = (bool) Config::get('statamic.routes.frontend', true);
 
-            if (!$firstSegment) {
-                return Redirect::away($redirectUrl, 301);
+                if (! $frontendEnabled) {
+                    return Redirect::away($this->redirectTarget($redirectUrl, $request), 301);
+                }
+
+                // Default behavior: redirect only the site root ("/").
+                if (! $request->segment(1)) {
+                    return Redirect::away($redirectUrl, 301);
+                }
             }
         }
 
@@ -67,13 +108,9 @@ class NoIndexMiddleware
 
         // Check if indexing is disabled. Use config default if no setting exists.
         $disableIndexing = $settings['disable_indexing'];
-        if ($disableIndexing) {
-            $firstSegment = $request->segment(1);
-            $cpRoute      = Config::get('statamic.cp.route', 'cp');
-            if ($firstSegment !== $cpRoute && !in_array($firstSegment, ['graphql', 'graphql-playground'])) {
-                $response->headers->set('X-Robots-Tag', 'noindex, nofollow', true);
-                $this->injectRobotsMetaTag($response);
-            }
+        if ($disableIndexing && ! $this->shouldSkip($request)) {
+            $response->headers->set('X-Robots-Tag', 'noindex, nofollow', true);
+            $this->injectRobotsMetaTag($response);
         }
 
         return $response;

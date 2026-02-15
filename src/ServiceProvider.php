@@ -23,7 +23,7 @@ class ServiceProvider extends AddonServiceProvider
 
         $middleware = \Emran\NoindexRedirect\Http\Middleware\NoIndexMiddleware::class;
 
-        $this->app->afterResolving(Kernel::class, function ($kernel) use ($middleware) {
+        $registerMiddleware = function ($kernel) use ($middleware) {
             if (method_exists($kernel, 'prependMiddleware')) {
                 $kernel->prependMiddleware($middleware);
                 return;
@@ -32,7 +32,19 @@ class ServiceProvider extends AddonServiceProvider
             if (method_exists($kernel, 'pushMiddleware')) {
                 $kernel->pushMiddleware($middleware);
             }
-        });
+        };
+
+        // The HTTP kernel is typically resolved before service providers are
+        // registered (public/index.php), so we need to handle both cases.
+        $this->app->afterResolving(Kernel::class, $registerMiddleware);
+
+        if ($this->app->resolved(Kernel::class)) {
+            try {
+                $registerMiddleware($this->app->make(Kernel::class));
+            } catch (\Throwable $e) {
+                //
+            }
+        }
     }
 
     /**

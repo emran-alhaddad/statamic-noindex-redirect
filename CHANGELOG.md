@@ -28,3 +28,9 @@ All notable changes to this project will be documented in this file.
 ## 1.0.5 - 2026-02-15
 
 - Apply noindex headers/meta even for error responses (404/403/500) when frontend routes are disabled.
+
+## 1.0.6 - 2026-02-15
+
+- Ensure the middleware is registered even if the HTTP kernel is resolved before providers.
+- Exclude Statamic actions routes (`/!/*`, including `!/forms`) from redirect/noindex.
+- When Statamic frontend routes are disabled, redirect all frontend requests (GET/HEAD) instead of rendering 404.

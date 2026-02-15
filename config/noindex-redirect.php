@@ -26,9 +26,14 @@ return [
     /*
     | Enable Redirect
     |
-    | When true, requests to the root of the CMS subdomain will be redirected
-    | to the URL specified below. This should only redirect the root path and
-    | leave control panel and API routes unaffected.
+    | When true, requests to the root of the site ("/") will be redirected to
+    | the URL specified below.
+    |
+    | If Statamic frontend routes are disabled in `config/statamic/routes.php`,
+    | all frontend GET/HEAD requests will be redirected (path + query preserved)
+    | to avoid rendering 404 pages.
+    |
+    | Control Panel, Statamic actions (`/!/*`), and GraphQL routes are excluded.
     */
     'enable_redirect' => env('NOINDEX_REDIRECT_ENABLE_REDIRECT', false),
 
