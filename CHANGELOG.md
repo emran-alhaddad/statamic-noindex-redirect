@@ -46,3 +46,7 @@ All notable changes to this project will be documented in this file.
 - Refactor middleware registration to resolve/register on boot for deterministic global coverage.
 - Keep `web`/`statamic.web` middleware group registration as a deduped fallback.
 - Fix regression where frontend 404/unmatched responses could miss noindex behavior.
+
+## 1.0.9 - 2026-02-16
+
+- Add explicit package version metadata in `composer.json` for release consistency.
