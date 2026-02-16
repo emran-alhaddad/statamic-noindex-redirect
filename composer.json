@@ -1,6 +1,6 @@
 {
     "name": "emran-alhaddad/noindex-redirect",
-    "description": "Disable indexing (noindex/nofollow) and optionally redirect the site root, with a Statamic CP Utility.",
+    "description": "Disable indexing (noindex/nofollow) and optionally redirect frontend requests, with a Statamic CP Utility.",
     "type": "statamic-addon",
     "license": "MIT",
     "keywords": [
@@ -24,7 +24,7 @@
     "extra": {
         "statamic": {
             "name": "Noindex Redirect",
-            "description": "Disable indexing (noindex/nofollow) and optionally redirect the site root."
+            "description": "Disable indexing (noindex/nofollow) and optionally redirect frontend requests."
         },
         "laravel": {
             "providers": [

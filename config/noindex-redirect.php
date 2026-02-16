@@ -26,12 +26,8 @@ return [
     /*
     | Enable Redirect
     |
-    | When true, requests to the root of the site ("/") will be redirected to
-    | the URL specified below.
-    |
-    | If Statamic frontend routes are disabled in `config/statamic/routes.php`,
-    | all frontend GET/HEAD requests will be redirected (path + query preserved)
-    | to avoid rendering 404 pages.
+    | When true, all frontend GET/HEAD requests will be redirected (301) to the
+    | URL specified below (path + query preserved).
     |
     | Control Panel, Statamic actions (`/!/*`), and GraphQL routes are excluded.
     */

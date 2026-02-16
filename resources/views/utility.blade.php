@@ -5,6 +5,11 @@
 
 @section('content')
 
+    @php
+        $disableIndexing = (bool) old('disable_indexing', $settings['disable_indexing']);
+        $enableRedirect = (bool) old('enable_redirect', $settings['enable_redirect']);
+    @endphp
+
     <header class="mb-6">
         @include('statamic::partials.breadcrumb', [
             'url' => cp_route('utilities.index'),
@@ -21,7 +26,7 @@
 
             <div class="mb-6">
                 <label class="flex items-center gap-2">
-                    <input type="checkbox" name="disable_indexing" value="1" @checked($settings['disable_indexing'])>
+                    <input type="checkbox" name="disable_indexing" value="1" @checked($disableIndexing)>
                     <span class="font-bold">{{ __('Disable Indexing') }}</span>
                 </label>
                 <p class="text-sm text-gray mt-1">
@@ -31,15 +36,15 @@
 
             <div class="mb-6">
                 <label class="flex items-center gap-2">
-                    <input type="checkbox" name="enable_redirect" value="1" @checked($settings['enable_redirect']) data-noindex-redirect-enable>
+                    <input type="checkbox" name="enable_redirect" value="1" @checked($enableRedirect) data-noindex-redirect-enable>
                     <span class="font-bold">{{ __('Enable Redirect') }}</span>
                 </label>
                 <p class="text-sm text-gray mt-1">
-                    {{ __('Redirect the root path of the CMS subdomain to a specified URL.') }}
+                    {{ __('Redirect all front-end requests to a specified URL.') }}
                 </p>
             </div>
 
-            <div class="mb-6" data-noindex-redirect-url-wrapper @style(['display:none' => ! $settings['enable_redirect']])>
+            <div class="mb-6" data-noindex-redirect-url-wrapper @style(['display:none' => ! $enableRedirect])>
                 <label class="block font-bold mb-1" for="redirect_url">{{ __('Redirect URL') }}</label>
                 <input
                     class="input-text w-full"
@@ -90,10 +95,7 @@
                 const toggle = () => {
                     const show = enable.checked;
                     wrapper.style.display = show ? '' : 'none';
-                    input.disabled = !show;
                     input.required = show;
-
-                    if (!show) input.value = '';
                 };
 
                 enable.addEventListener('change', toggle);

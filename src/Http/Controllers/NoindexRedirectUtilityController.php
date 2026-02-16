@@ -20,7 +20,7 @@ class NoindexRedirectUtilityController extends CpController
             NoindexRedirectSettings::save([
                 'disable_indexing' => $request->boolean('disable_indexing'),
                 'enable_redirect' => $enableRedirect,
-                'redirect_url' => $enableRedirect ? ($validated['redirect_url'] ?? null) : null,
+                'redirect_url' => $validated['redirect_url'] ?? null,
             ]);
 
             NoindexRedirectSettings::applyToConfig();

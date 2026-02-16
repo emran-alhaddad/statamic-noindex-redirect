@@ -22,7 +22,7 @@
 
 # Noindex Redirect (Statamic Addon)
 
-Disable indexing (`noindex, nofollow`) for your Statamic site and optionally redirect the root URL (`/`) to another domain — managed from a **Control Panel Utility**.
+Disable indexing (`noindex, nofollow`) for your Statamic site and optionally redirect all frontend requests to another domain — managed from a **Control Panel Utility**.
 
 ## Requirements
 
@@ -70,6 +70,7 @@ When enabled, the addon:
 
 - Adds `X-Robots-Tag: noindex, nofollow` to frontend responses (excludes CP + GraphQL routes).
 - Injects `<meta name="robots" content="noindex, nofollow">` into the HTML `<head>` for `text/html` responses.
+- Covers normal frontend pages and frontend 404/unmatched responses.
 - Optionally manages `public/robots.txt` (see below).
 - Still works even if Statamic frontend routes are disabled in `config/statamic/routes.php`.
 
@@ -85,11 +86,11 @@ If `NOINDEX_REDIRECT_MANAGE_PUBLIC_ROBOTS_TXT=true`, the addon will:
 
 If the `public` directory is not writable, robots.txt syncing is skipped.
 
-### Root redirect
+### Redirect
 
-When **Enable Redirect** is enabled and a `redirect_url` is set, requests to `/` will be redirected (301) to the configured URL.
+When **Enable Redirect** is enabled and a `redirect_url` is set, all frontend `GET`/`HEAD` requests will be redirected (301) to the configured URL (path + query preserved).
 
-If Statamic frontend routes are disabled in `config/statamic/routes.php`, the addon will redirect **all frontend GET/HEAD requests** (path + query preserved) to avoid rendering 404 pages (CP, `!/` actions, and GraphQL are excluded).
+Control Panel, `!/` actions (including `!/forms`), and GraphQL routes are excluded.
 
 ## License
 

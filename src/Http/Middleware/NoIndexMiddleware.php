@@ -3,12 +3,13 @@
 namespace Emran\NoindexRedirect\Http\Middleware;
 
 use Closure;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 use Emran\NoindexRedirect\NoindexRedirectSettings;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -18,7 +19,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  *   1. It attaches an X-Robots-Tag header with `noindex, nofollow` to
  *      responses when indexing is disabled. It skips control panel and
  *      GraphQL routes to avoid interfering with the CMS.
- *   2. It performs a root-path redirect to a configured URL when enabled.
+ *   2. It redirects all frontend GET/HEAD requests to a configured URL when enabled.
  */
 class NoIndexMiddleware
 {
@@ -26,19 +27,18 @@ class NoIndexMiddleware
 
     private function shouldSkip(Request $request): bool
     {
-        $firstSegment = $request->segment(1);
-        $cpRoute = Config::get('statamic.cp.route', 'cp');
+        $cpRoute = trim((string) Config::get('statamic.cp.route', 'cp'), '/');
 
-        if ($firstSegment === $cpRoute) {
+        if ($cpRoute !== '' && ($request->is($cpRoute) || $request->is($cpRoute.'/*'))) {
             return true;
         }
 
-        if (in_array($firstSegment, ['graphql', 'graphql-playground'], true)) {
+        if ($request->is('graphql') || $request->is('graphql/*') || $request->is('graphql-playground') || $request->is('graphql-playground/*')) {
             return true;
         }
 
         // Statamic "actions" endpoints live under "/!/*" (eg. "/!/forms/*").
-        if ($firstSegment === '!') {
+        if ($request->segment(1) === '!') {
             return true;
         }
 
@@ -67,53 +67,54 @@ class NoIndexMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        if ($this->shouldSkip($request)) {
+            return $next($request);
+        }
+
         $settings = NoindexRedirectSettings::all();
 
         $enableRedirect = $settings['enable_redirect'];
         $redirectUrl = $settings['redirect_url'];
 
-        // Perform redirect if enabled for frontend requests only.
-        // If Statamic frontend routes are disabled, redirect ALL frontend
-        // requests to avoid rendering 404 pages.
-        if ($enableRedirect && $redirectUrl && ! $this->shouldSkip($request)) {
+        // Redirect all frontend GET/HEAD requests when enabled.
+        if ($enableRedirect && $redirectUrl) {
             if (in_array($request->getMethod(), ['GET', 'HEAD'], true)) {
-                $frontendEnabled = (bool) Config::get('statamic.routes.frontend', true);
+                $response = Redirect::away($this->redirectTarget($redirectUrl, $request), 301);
 
-                if (! $frontendEnabled) {
-                    return Redirect::away($this->redirectTarget($redirectUrl, $request), 301);
+                if ((bool) $settings['disable_indexing']) {
+                    $response->headers->set('X-Robots-Tag', 'noindex, nofollow', true);
                 }
 
-                // Default behavior: redirect only the site root ("/").
-                if (! $request->segment(1)) {
-                    return Redirect::away($redirectUrl, 301);
-                }
+                return $response;
             }
         }
 
-        // Let the request continue and capture the response. If a request ends up
-        // as an exception (404/403/500), still render it so we can attach noindex
-        // headers/meta to the final response.
         try {
             $response = $next($request);
-        } catch (\Throwable $e) {
-            $handler = app(ExceptionHandler::class);
-
-            try {
-                $handler->report($e);
-            } catch (\Throwable $ignored) {
-            }
-
-            $response = $handler->render($request, $e);
+        } catch (\Throwable $exception) {
+            $response = $this->renderExceptionResponse($request, $exception);
         }
 
         // Check if indexing is disabled. Use config default if no setting exists.
         $disableIndexing = $settings['disable_indexing'];
-        if ($disableIndexing && ! $this->shouldSkip($request)) {
+        if ($disableIndexing) {
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow', true);
             $this->injectRobotsMetaTag($response);
         }
 
         return $response;
+    }
+
+    private function renderExceptionResponse(Request $request, \Throwable $exception): HttpResponse
+    {
+        $handler = app(ExceptionHandler::class);
+
+        try {
+            $handler->report($exception);
+        } catch (\Throwable $ignored) {
+        }
+
+        return $handler->render($request, $exception);
     }
 
     private function injectRobotsMetaTag($response): void
@@ -136,10 +137,6 @@ class NoIndexMiddleware
             return;
         }
 
-        if (stripos($html, '</head') === false) {
-            return;
-        }
-
         if (preg_match('/<meta\b[^>]*name=[\'"]robots[\'"][^>]*>/i', $html)) {
             $updated = preg_replace(
                 '/<meta\b[^>]*name=[\'"]robots[\'"][^>]*>/i',
@@ -156,19 +153,25 @@ class NoIndexMiddleware
         }
 
         $meta = self::ROBOTS_META_TAG."\n";
-        $updated = preg_replace('/<head\b[^>]*>/i', '$0'.$meta, $html, 1, $count);
 
-        if (! is_string($updated)) {
+        if (preg_match('/<head\b[^>]*>/i', $html)) {
+            $updated = preg_replace('/<head\b[^>]*>/i', '$0'.$meta, $html, 1);
+            if (is_string($updated)) {
+                $response->setContent($updated);
+            }
+
             return;
         }
 
-        if ($count === 0) {
-            $updated = preg_replace('/<\/head\s*>/i', $meta.'</head>', $updated, 1);
-            if (! is_string($updated)) {
-                return;
+        if (preg_match('/<html\b[^>]*>/i', $html)) {
+            $updated = preg_replace('/<html\b[^>]*>/i', '$0<head>'.$meta.'</head>', $html, 1);
+            if (is_string($updated)) {
+                $response->setContent($updated);
             }
+
+            return;
         }
 
-        $response->setContent($updated);
+        $response->setContent('<!DOCTYPE html><html><head>'.$meta.'</head><body>'.$html.'</body></html>');
     }
 }

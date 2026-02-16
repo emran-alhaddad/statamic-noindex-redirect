@@ -34,3 +34,15 @@ All notable changes to this project will be documented in this file.
 - Ensure the middleware is registered even if the HTTP kernel is resolved before providers.
 - Exclude Statamic actions routes (`/!/*`, including `!/forms`) from redirect/noindex.
 - When Statamic frontend routes are disabled, redirect all frontend requests (GET/HEAD) instead of rendering 404.
+
+## 1.0.7 - 2026-02-15
+
+- Save the redirect URL even when redirect is toggled off in the CP Utility.
+- Redirect all frontend GET/HEAD requests when enabled (CP, `!/` actions, and GraphQL excluded).
+- Add a route fallback so redirect/noindex still applies when Statamic frontend routes are disabled.
+
+## 1.0.8 - 2026-02-16
+
+- Refactor middleware registration to resolve/register on boot for deterministic global coverage.
+- Keep `web`/`statamic.web` middleware group registration as a deduped fallback.
+- Fix regression where frontend 404/unmatched responses could miss noindex behavior.

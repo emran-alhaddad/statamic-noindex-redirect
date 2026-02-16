@@ -11,42 +11,12 @@ use Emran\NoindexRedirect\Http\Controllers\NoindexRedirectUtilityController;
 /**
  * Service provider for the Noindex Redirect addon.
  *
- * This class registers a Control Panel Utility to manage settings and pushes a
- * middleware onto the web middleware group. The middleware handles both the
- * noindex header and optional root-path redirect.
+ * This class registers a Control Panel Utility to manage settings and
+ * registers middleware globally (with route-group fallback). The middleware
+ * handles both the noindex header/meta behavior and optional redirect.
  */
 class ServiceProvider extends AddonServiceProvider
 {
-    public function register()
-    {
-        parent::register();
-
-        $middleware = \Emran\NoindexRedirect\Http\Middleware\NoIndexMiddleware::class;
-
-        $registerMiddleware = function ($kernel) use ($middleware) {
-            if (method_exists($kernel, 'prependMiddleware')) {
-                $kernel->prependMiddleware($middleware);
-                return;
-            }
-
-            if (method_exists($kernel, 'pushMiddleware')) {
-                $kernel->pushMiddleware($middleware);
-            }
-        };
-
-        // The HTTP kernel is typically resolved before service providers are
-        // registered (public/index.php), so we need to handle both cases.
-        $this->app->afterResolving(Kernel::class, $registerMiddleware);
-
-        if ($this->app->resolved(Kernel::class)) {
-            try {
-                $registerMiddleware($this->app->make(Kernel::class));
-            } catch (\Throwable $e) {
-                //
-            }
-        }
-    }
-
     /**
      * The addon's route definitions. Only the web routes are needed here.
      * @var array
@@ -72,6 +42,10 @@ class ServiceProvider extends AddonServiceProvider
 
         NoindexRedirectSettings::applyToConfig();
 
+        $middleware = \Emran\NoindexRedirect\Http\Middleware\NoIndexMiddleware::class;
+        $this->registerGlobalMiddleware($middleware);
+        $this->registerGroupMiddlewareFallback($middleware);
+
         // Register the settings blueprint if supported (Statamic 6+).
         if (method_exists($this, 'registerSettingsBlueprint')) {
             $path = $this->getAddon()->directory().'resources/blueprints/settings.yaml';
@@ -95,5 +69,65 @@ class ServiceProvider extends AddonServiceProvider
                     $router->post('reset', [NoindexRedirectUtilityController::class, 'reset'])->name('reset');
                 });
         });
+    }
+
+    private function registerGlobalMiddleware(string $middleware): void
+    {
+        try {
+            $kernel = $this->app->make(Kernel::class);
+
+            if (method_exists($kernel, 'getMiddleware')) {
+                $current = $kernel->getMiddleware();
+                if (is_array($current) && in_array($middleware, $current, true)) {
+                    return;
+                }
+            }
+
+            if (method_exists($kernel, 'prependMiddleware')) {
+                $kernel->prependMiddleware($middleware);
+
+                return;
+            }
+
+            if (method_exists($kernel, 'pushMiddleware')) {
+                $kernel->pushMiddleware($middleware);
+            }
+        } catch (\Throwable $e) {
+            //
+        }
+    }
+
+    private function registerGroupMiddlewareFallback(string $middleware): void
+    {
+        try {
+            $router = $this->app['router'];
+            $this->prependMiddlewareToGroupIfMissing($router, 'statamic.web', $middleware);
+            $this->prependMiddlewareToGroupIfMissing($router, 'web', $middleware);
+        } catch (\Throwable $e) {
+            //
+        }
+    }
+
+    private function prependMiddlewareToGroupIfMissing($router, string $group, string $middleware): void
+    {
+        try {
+            if (method_exists($router, 'getMiddlewareGroups')) {
+                $groups = $router->getMiddlewareGroups();
+
+                if (is_array($groups)
+                    && array_key_exists($group, $groups)
+                    && is_array($groups[$group])
+                    && in_array($middleware, $groups[$group], true)
+                ) {
+                    return;
+                }
+            }
+
+            if (method_exists($router, 'prependMiddlewareToGroup')) {
+                $router->prependMiddlewareToGroup($group, $middleware);
+            }
+        } catch (\Throwable $e) {
+            //
+        }
     }
 }
