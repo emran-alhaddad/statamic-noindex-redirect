@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.1 - 2026-06-08
+
+- Fix CP Utility crash on Statamic 6 (`View [partials.breadcrumb] not found`): the `statamic::partials.breadcrumb` and `statamic::partials.flash` partials were removed in Statamic 6. They are now inlined in the utility view so it renders on Statamic 4, 5, and 6.
+- Show the Redirect URL field by default. On Statamic 6 the utility HTML is injected via Inertia/`v-html`, so the inline toggle script does not run; the field is now always reachable (the script still hides it when redirect is off on Statamic 4/5).
+
 ## 1.1.0 - 2026-06-08
 
 - Add support for Statamic 4, 5, and 6 (incl. 6.20). Constraint widened to `statamic/cms: ^4.0|^5.0|^6.0`.

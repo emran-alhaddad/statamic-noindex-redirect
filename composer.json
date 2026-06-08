@@ -1,6 +1,6 @@
 {
     "name": "emran-alhaddad/noindex-redirect",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Disable indexing (noindex/nofollow) and optionally redirect frontend requests, with a Statamic CP Utility.",
     "type": "statamic-addon",
     "license": "MIT",

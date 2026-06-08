@@ -11,14 +11,28 @@
     @endphp
 
     <header class="mb-6">
-        @include('statamic::partials.breadcrumb', [
-            'url' => cp_route('utilities.index'),
-            'title' => __('Utilities')
-        ])
+        {{-- Inlined breadcrumb: statamic::partials.breadcrumb was removed in Statamic 6. --}}
+        <div class="flex mb-2">
+            <a href="{{ cp_route('utilities.index') }}" class="flex items-center text-xs text-gray-700 hover:text-gray-900">
+                &larr;&nbsp;<span>{{ __('Utilities') }}</span>
+            </a>
+        </div>
         <h1>{{ __('Noindex Redirect') }}</h1>
     </header>
 
-    @include('statamic::partials.flash')
+    {{-- Inlined flash: statamic::partials.flash was removed in Statamic 6. --}}
+    @if (session()->has('success'))
+        <div class="alert alert-success mb-6">
+            <p>{{ session()->get('success') }}</p>
+        </div>
+    @endif
+    @if (isset($errors) && count($errors) > 0)
+        <div class="alert alert-danger mb-6">
+            @foreach ($errors->all() as $error)
+                <p>{{ $error }}</p>
+            @endforeach
+        </div>
+    @endif
 
     <div class="card">
         <form method="POST" action="{{ cp_route('utilities.noindex-redirect.update') }}">
@@ -44,7 +58,10 @@
                 </p>
             </div>
 
-            <div class="mb-6" data-noindex-redirect-url-wrapper @style(['display:none' => ! $enableRedirect])>
+            {{-- Visible by default so it works on Statamic 6, where the utility HTML is
+                 injected via Inertia/v-html and the toggle <script> below does not run.
+                 On Statamic 4/5 the script hides it when "Enable Redirect" is off. --}}
+            <div class="mb-6" data-noindex-redirect-url-wrapper>
                 <label class="block font-bold mb-1" for="redirect_url">{{ __('Redirect URL') }}</label>
                 <input
                     class="input-text w-full"
