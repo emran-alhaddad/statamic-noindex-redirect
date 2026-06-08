@@ -9,7 +9,7 @@ tabs:
             field:
               type: toggle
               display: Disable Indexing
-              instructions: Add X-Robots-Tag: noindex, nofollow to all front-end responses.
+              instructions: 'Add X-Robots-Tag: noindex, nofollow to all front-end responses.'
               default: true
           -
             handle: enable_redirect
@@ -23,7 +23,7 @@ tabs:
             field:
               type: text
               display: Redirect URL
-              instructions: Absolute URL to redirect to (e.g., https://example.com).
+              instructions: 'Absolute URL to redirect to (e.g., https://example.com).'
               validate: sometimes|url
               if:
                 enable_redirect: '=== true'

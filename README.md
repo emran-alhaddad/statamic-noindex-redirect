@@ -26,8 +26,8 @@ Disable indexing (`noindex, nofollow`) for your Statamic site and optionally red
 
 ## Requirements
 
-- PHP `^8.2`
-- Statamic `^5.0` (Statamic `^6.0` supported)
+- PHP `^8.1`
+- Statamic `^4.0`, `^5.0`, or `^6.0`
 
 ## Installation
 

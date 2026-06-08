@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.0 - 2026-06-08
+
+- Add support for Statamic 4, 5, and 6 (incl. 6.20). Constraint widened to `statamic/cms: ^4.0|^5.0|^6.0`.
+- Lower minimum PHP to `^8.1` so Statamic 4 installs (Laravel 9/10) are supported.
+- Remove redundant manual settings-blueprint registration: Statamic 6 auto-registers it from `resources/blueprints/settings.yaml` during boot, while Statamic 4/5 have no settings-blueprint concept (avoids a double bind on v6).
+- Quote `instructions` strings in `settings.yaml` so the colon (`X-Robots-Tag:`) parses correctly under Statamic 6's automatic blueprint parsing.
+
 ## 1.0.0 - 2026-02-11
 
 - Initial release.

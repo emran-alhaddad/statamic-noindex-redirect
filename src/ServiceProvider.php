@@ -5,7 +5,6 @@ namespace Emran\NoindexRedirect;
 use Illuminate\Contracts\Http\Kernel;
 use Statamic\Providers\AddonServiceProvider;
 use Statamic\Facades\Utility;
-use Statamic\Facades\YAML;
 use Emran\NoindexRedirect\Http\Controllers\NoindexRedirectUtilityController;
 
 /**
@@ -32,7 +31,7 @@ class ServiceProvider extends AddonServiceProvider
     }
 
     /**
-     * Boot the addon. Registers the settings blueprint and middleware.
+     * Boot the addon. Registers the CP Utility and middleware.
      *
      * @return void
      */
@@ -46,11 +45,10 @@ class ServiceProvider extends AddonServiceProvider
         $this->registerGlobalMiddleware($middleware);
         $this->registerGroupMiddlewareFallback($middleware);
 
-        // Register the settings blueprint if supported (Statamic 6+).
-        if (method_exists($this, 'registerSettingsBlueprint')) {
-            $path = $this->getAddon()->directory().'resources/blueprints/settings.yaml';
-            $this->registerSettingsBlueprint(YAML::file($path)->parse());
-        }
+        // Note: on Statamic 6+ the parent service provider auto-registers the
+        // settings blueprint from resources/blueprints/settings.yaml during boot.
+        // Statamic 4/5 have no settings-blueprint concept, so there's nothing to
+        // register here. (Registering it manually would double-bind on v6.)
 
         Utility::extend(function () {
             Utility::register('noindex_redirect')
