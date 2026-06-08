@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.2 - 2026-06-08
+
+- Fix the CP Utility being unstyled and non-interactive on Statamic 6. Statamic 6 renders a utility view by compiling its HTML as a Vue component template (`DynamicHtmlRenderer`), which strips `<script>` tags, and its redesigned control panel no longer ships the legacy CP CSS classes (`card`, `btn-primary`, `input-text`, …). The utility view is now fully self-contained: inline styles instead of CP classes, and no JavaScript. The Redirect URL field is always visible, so the form works without the previous toggle script. Renders and functions identically on Statamic 4, 5, and 6.
+
 ## 1.1.1 - 2026-06-08
 
 - Fix CP Utility crash on Statamic 6 (`View [partials.breadcrumb] not found`): the `statamic::partials.breadcrumb` and `statamic::partials.flash` partials were removed in Statamic 6. They are now inlined in the utility view so it renders on Statamic 4, 5, and 6.
